@@ -1,0 +1,76 @@
+{
+  "placeholderImages": [
+    {
+      "id": "project-1",
+      "description": "A modern technology startup office",
+      "imageUrl": "https://images.unsplash.com/photo-1556761175-5973dc0f32e7?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw3fHx0ZWNoJTIwc3RhcnR1cHxlbnwwfHx8fDE3NzIzNzQ2MzJ8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "tech startup"
+    },
+    {
+      "id": "project-2",
+      "description": "Sustainable agriculture project",
+      "imageUrl": "https://images.unsplash.com/photo-1590073139156-861678ba66f5?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyfHxncmVlbiUyMGVjb3xlbnwwfHx8fDE3NzIzNzQ2MzJ8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "green eco"
+    },
+    {
+      "id": "project-3",
+      "description": "E-commerce platform interface",
+      "imageUrl": "https://images.unsplash.com/photo-1555438468-aafd1ab4234d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyfHxlY29tbWVyY2UlMjBhcHB8ZW58MHx8fHwxNzcyMzc0NjMzfDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "ecommerce app"
+    },
+    {
+      "id": "project-4",
+      "description": "Mobile health application dashboard",
+      "imageUrl": "https://images.unsplash.com/photo-1619037961428-e6410a7afd38?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHxoZWFsdGglMjBhcHB8ZW58MHx8fHwxNzcyMzc0NjMzfDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "health app"
+    },
+    {
+      "id": "project-5",
+      "description": "Educational platform for kids",
+      "imageUrl": "https://images.unsplash.com/photo-1761208662441-9ba3264ca7fd?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw4fHxlZHVjYXRpb24lMjBraWRzfGVufDB8fHx8MTc3MjM3NDYzMnww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "education kids"
+    },
+    {
+      "id": "inventor-1",
+      "description": "Smart medical glasses concept",
+      "imageUrl": "https://res.cloudinary.com/ddznxtb6f/image/upload/v1772741404/Screenshot_2026-03-05_230945_o5vnip.png",
+      "imageHint": "smart glasses"
+    },
+    {
+      "id": "inventor-2",
+      "description": "Health tracking wristband",
+      "imageUrl": "https://res.cloudinary.com/ddznxtb6f/image/upload/v1772912756/Screenshot_2026-03-07_224444_elibcp.png",
+      "imageHint": "health wristband"
+    },
+    {
+      "id": "inventor-3",
+      "description": "Smart farming with solar power",
+      "imageUrl": "https://res.cloudinary.com/ddznxtb6f/image/upload/v1772913881/Screenshot_2026-03-07_230417_jrul0t.png",
+      "imageHint": "solar farming"
+    },
+    {
+      "id": "inventor-4",
+      "description": "Artificial intelligence in medicine",
+      "imageUrl": "https://res.cloudinary.com/ddznxtb6f/image/upload/v1772915261/Screenshot_2026-03-07_232707_fsidmt.png",
+      "imageHint": "medical ai"
+    },
+    {
+      "id": "inventor-5",
+      "description": "Organic farming and soil",
+      "imageUrl": "https://res.cloudinary.com/ddznxtb6f/image/upload/v1773007104/Screenshot_2026-03-09_005806_fqst7h.png",
+      "imageHint": "organic farming"
+    },
+    {
+      "id": "inventor-6",
+      "description": "Smart device for sterilizing vegetables",
+      "imageUrl": "https://res.cloudinary.com/ddznxtb6f/image/upload/v1773007518/Screenshot_2026-03-09_010453_gvj4jw.png",
+      "imageHint": "clean vegetables"
+    },
+    {
+      "id": "inventor-7",
+      "description": "Agricultural marketing platform",
+      "imageUrl": "https://res.cloudinary.com/ddznxtb6f/image/upload/v1773008821/Screenshot_2026-03-09_012647_mkemu2.png",
+      "imageHint": "farm ecommerce"
+    }
+  ]
+}

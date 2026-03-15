@@ -12,46 +12,6 @@ interface FirebaseSdks {
   firestore: Firestore | null;
 }
 
-export function initializeFirebase(): FirebaseSdks {
-  // If already initialized, return the existing instances
-  if (getApps().length) {
-    const app = getApp();
-    return getSdks(app);
-  }
-  
-  let app: FirebaseApp;
-
-  // 1. Try automatic initialization (for Firebase App Hosting)
-  try {
-    app = initializeApp();
-    return getSdks(app);
-  } catch (e) {
-    // This is an expected failure when not in an App Hosting environment.
-    // We will proceed to the fallback method.
-  }
-
-  // 2. Fallback: Use the firebaseConfig object from environment variables
-  const isConfigValid = firebaseConfig.apiKey && firebaseConfig.projectId;
-
-  if (isConfigValid) {
-    try {
-      app = initializeApp(firebaseConfig);
-      return getSdks(app);
-    } catch (e) {
-      // This would happen for other errors, e.g., malformed config values
-      console.error("Firebase initialization with config object failed.", e);
-      return { firebaseApp: null, auth: null, firestore: null };
-    }
-  } else {
-    // This is the most likely error path in local dev if .env is not set up.
-    // It prevents the app from crashing with an 'invalid-api-key' error.
-    if (process.env.NODE_ENV !== 'production') {
-      console.warn("Firebase automatic initialization failed, and the fallback config is missing or invalid. Please ensure NEXT_PUBLIC_FIREBASE_* environment variables are set correctly in your .env.local file.");
-    }
-    return { firebaseApp: null, auth: null, firestore: null };
-  }
-}
-
 // Helper to get SDKs from an initialized app. Returns a non-null object.
 export function getSdks(firebaseApp: FirebaseApp): { firebaseApp: FirebaseApp; auth: Auth; firestore: Firestore; } {
   return {
@@ -59,6 +19,32 @@ export function getSdks(firebaseApp: FirebaseApp): { firebaseApp: FirebaseApp; a
     auth: getAuth(firebaseApp),
     firestore: getFirestore(firebaseApp)
   };
+}
+
+
+export function initializeFirebase(): FirebaseSdks {
+  // If already initialized, return the existing instances
+  if (getApps().length) {
+    const app = getApp();
+    return getSdks(app);
+  }
+  
+  const isConfigValid = firebaseConfig.apiKey && firebaseConfig.projectId;
+
+  if (!isConfigValid) {
+    if (process.env.NODE_ENV !== 'production') {
+      console.warn("Firebase config is missing or invalid. Please ensure NEXT_PUBLIC_FIREBASE_* environment variables are set correctly.");
+    }
+    return { firebaseApp: null, auth: null, firestore: null };
+  }
+
+  try {
+    const app = initializeApp(firebaseConfig);
+    return getSdks(app);
+  } catch (e) {
+    console.error("Firebase initialization with config object failed.", e);
+    return { firebaseApp: null, auth: null, firestore: null };
+  }
 }
 
 // Re-export other necessary modules

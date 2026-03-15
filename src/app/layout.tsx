@@ -7,7 +7,7 @@ import { ProjectsProvider } from '@/context/ProjectsContext';
 
 export const metadata: Metadata = {
   title: 'جسر الاستثمار',
-  description: 'منصة تربط الأفكار بالتمويل',
+  description: 'منصة تربط الأفكار بالتمويل، حيث تتحول الرؤى إلى مشاريع ناجحة.',
 };
 
 export default function RootLayout({
@@ -18,9 +18,6 @@ export default function RootLayout({
   return (
     <html lang="ar" dir="rtl">
       <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link href="https://fonts.googleapis.com/css2?family=Almarai:wght@300;400;700;800&family=Cairo:wght@400;700;900&display=swap" rel="stylesheet" />
       </head>
       <body className="font-body antialiased">
         <FirebaseClientProvider>

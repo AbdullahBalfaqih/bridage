@@ -19,8 +19,8 @@ export default {
     },
     extend: {
       fontFamily: {
-        body: ['Almarai', 'sans-serif'],
-        headline: ['Almarai', 'sans-serif'],
+        body: ['CustomFont', 'sans-serif'],
+        headline: ['CustomFont', 'sans-serif'],
         code: ['monospace'],
       },
       colors: {

@@ -5,28 +5,48 @@ import AppLayout from "@/components/app-layout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { useProjects } from "@/context/ProjectsContext";
-import type { Investment } from "@/lib/types";
+import type { Investment, UserProfile } from "@/lib/types";
 import { Wallet, PlusCircle, TrendingUp } from "lucide-react";
 import Image from "next/image";
 import InvestmentTracker from "@/components/investment-tracker";
 import AddFundsDialog from "@/components/add-funds-dialog";
 import Link from "next/link";
+import { useUser, useFirestore, useDoc, useCollection, useMemoFirebase } from '@/firebase';
+import { doc, collection } from 'firebase/firestore';
+import { updateDocumentNonBlocking } from '@/firebase/non-blocking-updates';
+import { Loader } from "@/components/loader";
 
-const mockInvestments: Investment[] = [
-    { projectId: 'inv-1', amount: 5000, date: new Date('2024-05-10') },
-    { projectId: 'inv-3', amount: 10000, date: new Date('2024-04-22') },
-];
 
 export default function InvestPage() {
-    const [virtualBalance, setVirtualBalance] = useState(35000);
-    const { projects } = useProjects();
-    const [investments, setInvestments] = useState<Investment[]>(mockInvestments);
+    const { user, isUserLoading } = useUser();
+    const firestore = useFirestore();
+    const { projects, projectsLoading } = useProjects();
     const [isAddFundsOpen, setIsAddFundsOpen] = useState(false);
 
+    const userProfileRef = useMemoFirebase(
+      () => (user ? doc(firestore, 'users', user.uid) : null),
+      [user, firestore]
+    );
+    const { data: userProfile, isLoading: profileLoading } = useDoc<UserProfile>(userProfileRef);
+
+    const investmentsQuery = useMemoFirebase(
+      () => (user ? collection(firestore, 'users', user.uid, 'investments') : null),
+      [user, firestore]
+    );
+    const { data: investments, isLoading: investmentsLoading } = useCollection<Investment>(investmentsQuery);
+
+    const virtualBalance = userProfile?.virtualBalance ?? 0;
+
     const handleAddFunds = (amount: number) => {
-        setVirtualBalance(prev => prev + amount);
+        if (!userProfileRef) return;
+        const newBalance = (userProfile?.virtualBalance || 0) + amount;
+        updateDocumentNonBlocking(userProfileRef, { virtualBalance: newBalance });
         setIsAddFundsOpen(false);
     };
+    
+    if (isUserLoading || profileLoading || investmentsLoading || projectsLoading) {
+      return <AppLayout pageTitle="استثماراتي"><Loader /></AppLayout>;
+    }
 
     return (
         <AppLayout pageTitle="استثماراتي">
@@ -60,7 +80,7 @@ export default function InvestPage() {
                     </CardFooter>
                 </Card>
 
-                {investments.length > 0 ? (
+                {investments && investments.length > 0 ? (
                     <InvestmentTracker investments={investments} projects={projects} />
                 ) : (
                      <Card className="text-center p-8 rounded-2xl">

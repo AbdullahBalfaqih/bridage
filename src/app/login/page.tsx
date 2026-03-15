@@ -9,6 +9,12 @@ import { Eye, EyeOff, Lock, Mail } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Loader } from '@/components/loader';
 import { Input } from '@/components/ui/input';
+import { useForm } from 'react-hook-form';
+import { z } from 'zod';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useToast } from '@/hooks/use-toast';
+import { useAuth, useUser } from '@/firebase';
+import { signInWithEmailAndPassword } from 'firebase/auth';
 
 const GoogleIcon = (props: React.SVGProps<SVGSVGElement>) => (
     <svg role="img" viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg" {...props}>
@@ -26,19 +32,56 @@ const XIcon = (props: React.SVGProps<SVGSVGElement>) => (
     <svg role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" {...props}><title>X</title><path d="M18.901 1.153h3.68l-8.04 9.19L24 22.846h-7.406l-5.8-7.584-6.638 7.584H.474l8.6-9.83L0 1.154h7.594l5.243 7.184L18.901 1.153Zm-1.653 19.57h2.608L5.421 2.56h-2.78l14.632 18.163Z"/></svg>
 );
 
+const loginFormSchema = z.object({
+  email: z.string().email({ message: 'الرجاء إدخال بريد إلكتروني صالح.' }),
+  password: z.string().min(1, { message: 'الرجاء إدخال كلمة المرور.' }),
+});
+
+type LoginFormValues = z.infer<typeof loginFormSchema>;
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = React.useState(false);
   const [isLoading, setIsLoading] = React.useState(false);
   const router = useRouter();
+  const { toast } = useToast();
+  const auth = useAuth();
+  const { user, isUserLoading } = useUser();
 
-  const handleLogin = (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-    setTimeout(() => {
+  const form = useForm<LoginFormValues>({
+    resolver: zodResolver(loginFormSchema),
+    defaultValues: { email: '', password: '' },
+  });
+
+  React.useEffect(() => {
+    if (!isUserLoading && user) {
       router.push('/home');
-    }, 3000);
+    }
+  }, [user, isUserLoading, router]);
+
+  const handleLogin = async (data: LoginFormValues) => {
+    setIsLoading(true);
+    try {
+      await signInWithEmailAndPassword(auth, data.email, data.password);
+      // On success, the useEffect hook will redirect.
+      // We can leave isLoading as true to show the loader until redirect.
+    } catch (error) {
+      setIsLoading(false);
+      toast({
+          variant: 'destructive',
+          title: 'فشل تسجيل الدخول',
+          description: 'البريد الإلكتروني أو كلمة المرور غير صحيحة.',
+      });
+    }
   };
+
+  if (isUserLoading || user) {
+    return (
+      <div className="min-h-screen bg-background text-foreground flex flex-col items-center justify-center">
+        <Loader />
+        <p className="text-xl font-bold text-primary mt-8">جاري تسجيل الدخول</p>
+      </div>
+    );
+  }
 
   if (isLoading) {
     return (
@@ -78,24 +121,26 @@ export default function LoginPage() {
                 <h2 className="text-3xl font-bold font-headline text-center text-primary mt-2">مرحبًا بعودتك</h2>
               </div>
               
-              <form onSubmit={handleLogin} className="space-y-4">
+              <form onSubmit={form.handleSubmit(handleLogin)} className="space-y-4">
                   <div className="space-y-1.5">
                       <label htmlFor="email" className="text-sm font-medium text-muted-foreground">البريد الإلكتروني</label>
                       <div className="relative">
                           <Mail className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-primary" />
-                          <Input id="email" type="email" required dir="ltr" className="pr-10 bg-secondary border-none" />
+                          <Input id="email" type="email" dir="ltr" className="pr-10 bg-secondary border-none" {...form.register('email')} />
                       </div>
+                       {form.formState.errors.email && <p className="text-xs text-destructive">{form.formState.errors.email.message}</p>}
                   </div>
 
                   <div className="space-y-1.5">
                       <label htmlFor="password" className="text-sm font-medium text-muted-foreground">كلمة المرور</label>
                       <div className="relative">
                           <Lock className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-primary" />
-                          <Input id="password" type={showPassword ? "text" : "password"} required dir="ltr" className="pr-10 pl-10 bg-secondary border-none" />
+                          <Input id="password" type={showPassword ? "text" : "password"} dir="ltr" className="pr-10 pl-10 bg-secondary border-none" {...form.register('password')} />
                           <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute inset-y-0 left-0 flex items-center px-3 text-muted-foreground">
                               {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                           </button>
                       </div>
+                      {form.formState.errors.password && <p className="text-xs text-destructive">{form.formState.errors.password.message}</p>}
                   </div>
 
 
@@ -111,7 +156,7 @@ export default function LoginPage() {
                   </div>
                   
                   <div className='pt-4'>
-                    <Button type="submit" size="lg" className="w-full bg-primary-foreground text-primary hover:bg-primary-foreground/90 rounded-xl shadow-lg">
+                    <Button type="submit" size="lg" className="w-full bg-primary-foreground text-primary hover:bg-primary-foreground/90 rounded-xl shadow-lg" disabled={isLoading}>
                         تسجيل الدخول
                     </Button>
                   </div>

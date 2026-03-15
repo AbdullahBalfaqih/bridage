@@ -13,9 +13,12 @@ import type { ReactNode } from "react";
 import { Progress } from "@/components/ui/progress";
 import { InvestmentProgressChart } from "@/components/investment-progress-chart";
 import InvestDialog from "@/components/invest-dialog";
-import type { Project } from "@/lib/types";
+import type { Project, UserProfile } from "@/lib/types";
 import { useToast } from "@/hooks/use-toast";
-
+import { useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
+import { doc, collection, increment } from 'firebase/firestore';
+import { addDocumentNonBlocking, updateDocumentNonBlocking } from '@/firebase/non-blocking-updates';
+import { Loader } from "@/components/loader";
 
 type StatCardProps = {
   icon: LucideIcon;
@@ -39,54 +42,71 @@ const StatCard = ({ icon: Icon, title, value, description }: StatCardProps) => (
 
 export default function ProjectDetailsPage() {
   const params = useParams<{ id: string }>();
-  const { projects, setProjects } = useProjects();
+  const { projects, projectsLoading } = useProjects();
   const project = projects.find(p => p.id === params.id);
   const { toast } = useToast();
   
-  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
-  const [virtualBalance, setVirtualBalance] = useState(50000);
+  const [isInvestDialogOpen, setIsInvestDialogOpen] = useState(false);
 
+  const { user, isUserLoading } = useUser();
+  const firestore = useFirestore();
+
+  const userProfileRef = useMemoFirebase(
+    () => (user ? doc(firestore, 'users', user.uid) : null),
+    [user, firestore]
+  );
+  const { data: userProfile, isLoading: profileLoading } = useDoc<UserProfile>(userProfileRef);
+
+  const handleInvestClick = () => {
+    setIsInvestDialogOpen(true);
+  };
+  
+  const handleConfirmInvestment = (amount: number) => {
+    if (!project || !user || !userProfile || !firestore) return;
+
+    if (amount <= 0) {
+        toast({ variant: "destructive", title: "خطأ", description: "الرجاء إدخال مبلغ استثمار صحيح." });
+        return;
+    }
+    if (amount > userProfile.virtualBalance) {
+        toast({ variant: "destructive", title: "خطأ", description: "رصيدك غير كافٍ لإتمام هذا الاستثمار." });
+        return;
+    }
+
+    // 1. Create investment record
+    const investmentsColRef = collection(firestore, 'users', user.uid, 'investments');
+    addDocumentNonBlocking(investmentsColRef, {
+      investorId: user.uid,
+      projectId: project.id,
+      amount: amount,
+      investmentDate: new Date().toISOString(),
+      status: 'Confirmed'
+    });
+
+    // 2. Decrement user balance
+    if (userProfileRef) {
+      updateDocumentNonBlocking(userProfileRef, { virtualBalance: increment(-amount) });
+    }
+
+    // 3. Increment project funding
+    const projectDocRef = doc(firestore, 'public_projects', project.id);
+    updateDocumentNonBlocking(projectDocRef, {
+      currentFunding: increment(amount),
+      investors: increment(1)
+    });
+    
+    setIsInvestDialogOpen(false);
+  };
+
+  if (projectsLoading || isUserLoading || profileLoading) {
+    return <AppLayout pageTitle="..."><Loader /></AppLayout>
+  }
+  
   if (!project) {
     notFound();
   }
-
-  const handleInvestClick = () => {
-    setSelectedProject(project);
-  };
-
-  const handleConfirmInvestment = (amount: number) => {
-    if (!selectedProject || amount <= 0) {
-        toast({
-            variant: "destructive",
-            title: "خطأ",
-            description: "الرجاء إدخال مبلغ استثمار صحيح.",
-        });
-        return;
-    }
-    if (amount > virtualBalance) {
-        toast({
-            variant: "destructive",
-            title: "خطأ",
-            description: "رصيدك غير كافٍ لإتمام هذا الاستثمار.",
-        });
-        return;
-    }
-
-    setVirtualBalance(prev => prev - amount);
-    setProjects(prevProjects => prevProjects.map(p => {
-        if (p.id === selectedProject.id) {
-            return {
-                ...p,
-                amountRaised: (p.amountRaised || 0) + amount,
-                investors: (p.investors || 0) + 1,
-            };
-        }
-        return p;
-    }));
-    setSelectedProject(null);
-  };
   
-  const fundingProgress = project.amountRaised && project.cost ? (project.amountRaised / project.cost) * 100 : 0;
+  const fundingProgress = project.currentFunding && project.requiredCost ? (project.currentFunding / project.requiredCost) * 100 : 0;
 
   return (
     <AppLayout pageTitle={project.name} showBackButton={true}>
@@ -105,9 +125,9 @@ export default function ProjectDetailsPage() {
         <Card className="w-full max-w-sm rounded-2xl p-4">
             <div className="flex justify-between items-center mb-2">
                 <div className="flex items-center">
-                    <span className="text-2xl font-bold text-primary">{new Intl.NumberFormat('ar-SA').format(project.amountRaised || 0)}</span>
+                    <span className="text-2xl font-bold text-primary">{new Intl.NumberFormat('ar-SA').format(project.currentFunding || 0)}</span>
                     <Image src="https://res.cloudinary.com/ddznxtb6f/image/upload/v1772742156/image-removebg-preview_53_qkvpjg.png" alt="SAR" width={20} height={20} className="object-contain -mr-1" />
-                    <span className="text-muted-foreground text-xs"> تم جمعه من {new Intl.NumberFormat('ar-SA').format(project.cost)}</span>
+                    <span className="text-muted-foreground text-xs"> تم جمعه من {new Intl.NumberFormat('ar-SA').format(project.requiredCost)}</span>
                 </div>
                 <span className="text-lg font-bold">{fundingProgress.toFixed(0)}%</span>
             </div>
@@ -126,7 +146,7 @@ export default function ProjectDetailsPage() {
                 title="الهدف"
                 value={
                     <div className="flex items-center gap-1 justify-start">
-                        <span>{new Intl.NumberFormat('ar-SA').format(project.cost)}</span>
+                        <span>{new Intl.NumberFormat('ar-SA').format(project.requiredCost)}</span>
                         <Image src="https://res.cloudinary.com/ddznxtb6f/image/upload/v1772742156/image-removebg-preview_53_qkvpjg.png" alt="SAR" width={20} height={20} className="object-contain -mr-1" />
                     </div>
                 }
@@ -134,7 +154,7 @@ export default function ProjectDetailsPage() {
             <StatCard 
                 icon={Percent}
                 title="الربح المتوقع"
-                value={`${project.expectedProfit}%`}
+                value={`${project.expectedProfits}%`}
             />
              <StatCard 
                 icon={Clock}
@@ -158,7 +178,7 @@ export default function ProjectDetailsPage() {
                     </AccordionTrigger>
                     <AccordionContent className="px-6 pb-6">
                         <p className="text-muted-foreground leading-relaxed">
-                            {project.description}
+                            {project.briefDescription}
                         </p>
                     </AccordionContent>
                 </AccordionItem>
@@ -197,11 +217,11 @@ export default function ProjectDetailsPage() {
             </button>
         </div>
       </div>
-      {selectedProject && (
+      {isInvestDialogOpen && userProfile && (
         <InvestDialog
-            project={selectedProject}
-            balance={virtualBalance}
-            onClose={() => setSelectedProject(null)}
+            project={project}
+            balance={userProfile.virtualBalance}
+            onClose={() => setIsInvestDialogOpen(false)}
             onConfirm={handleConfirmInvestment}
         />
       )}

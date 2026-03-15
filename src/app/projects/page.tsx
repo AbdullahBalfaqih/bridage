@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Search, SlidersHorizontal } from 'lucide-react';
 import InvestmentCard from '@/components/investment-card';
 import InvestDialog from '@/components/invest-dialog';
-import type { Project } from '@/lib/types';
+import type { Project, UserProfile } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Separator } from "@/components/ui/separator";
@@ -16,20 +16,32 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
 import Image from "next/image";
+import { useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
+import { doc, collection, increment } from 'firebase/firestore';
+import { addDocumentNonBlocking, updateDocumentNonBlocking } from '@/firebase/non-blocking-updates';
+import { Loader } from '@/components/loader';
 
 
 export default function ProjectsPage() {
   const [searchQuery, setSearchQuery] = useState('');
-  const { projects, setProjects } = useProjects();
+  const { projects, projectsLoading } = useProjects();
   const categories = ['الكل', ...new Set(projects.map(p => p.category))];
   const [activeCategory, setActiveCategory] = useState('الكل');
   
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
-  const [virtualBalance, setVirtualBalance] = useState(50000); // This should probably come from a shared context, but for now this is fine.
   const { toast } = useToast();
 
+  const { user, isUserLoading } = useUser();
+  const firestore = useFirestore();
+
+  const userProfileRef = useMemoFirebase(
+    () => (user ? doc(firestore, 'users', user.uid) : null),
+    [user, firestore]
+  );
+  const { data: userProfile, isLoading: profileLoading } = useDoc<UserProfile>(userProfileRef);
+
   const [sortOrder, setSortOrder] = useState('newest');
-  const maxCost = Math.max(...projects.map(p => p.cost), 0);
+  const maxCost = Math.max(...projects.map(p => p.requiredCost), 0);
   const [costRange, setCostRange] = useState([0, maxCost]);
 
   const handleInvestClick = (project: Project) => {
@@ -37,36 +49,39 @@ export default function ProjectsPage() {
   };
 
   const handleConfirmInvestment = (amount: number) => {
-    if (!selectedProject) return;
+    if (!selectedProject || !user || !userProfile || !firestore) return;
     
     if (amount <= 0) {
-        toast({
-            variant: "destructive",
-            title: "خطأ",
-            description: "الرجاء إدخال مبلغ استثمار صحيح.",
-        });
+        toast({ variant: "destructive", title: "خطأ", description: "الرجاء إدخال مبلغ استثمار صحيح." });
         return;
     }
-    if (amount > virtualBalance) {
-        toast({
-            variant: "destructive",
-            title: "خطأ",
-            description: "رصيدك غير كافٍ لإتمام هذا الاستثمار.",
-        });
+    if (amount > userProfile.virtualBalance) {
+        toast({ variant: "destructive", title: "خطأ", description: "رصيدك غير كافٍ لإتمام هذا الاستثمار." });
         return;
     }
 
-    setVirtualBalance(prev => prev - amount);
-    setProjects(prevProjects => prevProjects.map(p => {
-        if (p.id === selectedProject.id) {
-            return {
-                ...p,
-                amountRaised: (p.amountRaised || 0) + amount,
-                investors: (p.investors || 0) + 1,
-            };
-        }
-        return p;
-    }));
+    // 1. Create investment record
+    const investmentsColRef = collection(firestore, 'users', user.uid, 'investments');
+    addDocumentNonBlocking(investmentsColRef, {
+      investorId: user.uid,
+      projectId: selectedProject.id,
+      amount: amount,
+      investmentDate: new Date().toISOString(),
+      status: 'Confirmed'
+    });
+
+    // 2. Decrement user balance
+    if (userProfileRef) {
+      updateDocumentNonBlocking(userProfileRef, { virtualBalance: increment(-amount) });
+    }
+
+    // 3. Increment project funding
+    const projectDocRef = doc(firestore, 'public_projects', selectedProject.id);
+    updateDocumentNonBlocking(projectDocRef, {
+      currentFunding: increment(amount),
+      investors: increment(1)
+    });
+    
     setSelectedProject(null);
   };
 
@@ -75,9 +90,9 @@ export default function ProjectsPage() {
       const categoryMatch = activeCategory === 'الكل' || project.category === activeCategory;
       const searchMatch = searchQuery === '' ||
         project.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        project.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (project.briefDescription || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
         project.inventor.toLowerCase().includes(searchQuery.toLowerCase());
-      const costMatch = project.cost >= costRange[0] && project.cost <= costRange[1];
+      const costMatch = project.requiredCost >= costRange[0] && project.requiredCost <= costRange[1];
       return categoryMatch && searchMatch && costMatch;
     })
     .sort((a, b) => {
@@ -87,15 +102,19 @@ export default function ProjectsPage() {
         case 'oldest':
           return new Date(a.publishDate).getTime() - new Date(b.publishDate).getTime();
         case 'highest-cost':
-          return b.cost - a.cost;
+          return b.requiredCost - a.requiredCost;
         case 'lowest-cost':
-          return a.cost - b.cost;
+          return a.requiredCost - b.requiredCost;
         case 'most-funded':
-          return (b.amountRaised || 0) - (a.amountRaised || 0);
+          return (b.currentFunding || 0) - (a.currentFunding || 0);
         default:
           return 0;
       }
     });
+  
+  if (isUserLoading || profileLoading || projectsLoading) {
+    return <AppLayout pageTitle="المشاريع"><Loader/></AppLayout>
+  }
 
   return (
     <AppLayout pageTitle="المشاريع">
@@ -204,10 +223,10 @@ export default function ProjectsPage() {
           )}
         </div>
 
-        {selectedProject && (
+        {selectedProject && userProfile && (
             <InvestDialog
                 project={selectedProject}
-                balance={virtualBalance}
+                balance={userProfile.virtualBalance}
                 onClose={() => setSelectedProject(null)}
                 onConfirm={handleConfirmInvestment}
             />

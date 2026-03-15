@@ -22,6 +22,13 @@ import Image from "next/image";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
+import Link from "next/link";
+import { useUser, useDoc, useFirestore, useMemoFirebase, useCollection } from "@/firebase";
+import { doc, collection, query, orderBy, limit } from "firebase/firestore";
+import type { UserProfile, Notification as NotificationType } from "@/lib/types";
+import { formatDistanceToNow } from 'date-fns';
+import { arSA } from 'date-fns/locale';
+import type { LucideIcon } from "lucide-react";
 
 const promoItems = [
   {
@@ -44,34 +51,6 @@ const promoItems = [
   },
 ];
 
-const notifications = [
-    {
-        icon: CheckCircle,
-        title: "تم قبول استثمارك!",
-        description: "تم قبول استثمارك في مشروع \"نظارة طبية ذكية\".",
-        time: "قبل 5 دقائق",
-        isNew: true,
-        iconColor: "text-primary"
-    },
-    {
-        icon: Info,
-        title: "تحديث جديد للمشروع",
-        description: "مشروع \"تطبيق طبي\" أضاف تحديثًا جديدًا.",
-        time: "قبل ساعة",
-        isNew: true,
-        iconColor: "text-primary"
-    },
-    {
-        icon: PartyPopper,
-        title: "مرحبًا بك في جسر الاستثمار",
-        description: "شكرًا لانضمامك إلينا. استكشف المشاريع الآن!",
-        time: "قبل يوم",
-        isNew: false,
-        iconColor: "text-primary"
-    }
-];
-
-
 export default function HomePage() {
   const { projects } = useProjects();
   const [searchQuery, setSearchQuery] = useState('');
@@ -81,8 +60,38 @@ export default function HomePage() {
   const [current, setCurrent] = useState(0)
 
   const [sortOrder, setSortOrder] = useState('newest');
-  const maxCost = Math.max(...projects.map(p => p.cost), 0);
+  const maxCost = Math.max(...projects.map(p => p.requiredCost), 0);
   const [costRange, setCostRange] = useState([0, maxCost]);
+  
+  const { user } = useUser();
+  const firestore = useFirestore();
+
+  const userProfileRef = useMemoFirebase(
+    () => (user ? doc(firestore, "users", user.uid) : null),
+    [firestore, user]
+  );
+  const { data: userProfile } = useDoc<UserProfile>(userProfileRef);
+
+  const notificationsQuery = useMemoFirebase(
+    () => (user ? query(collection(firestore, 'users', user.uid, 'notifications'), orderBy('createdAt', 'desc'), limit(3)) : null),
+    [firestore, user]
+  );
+  const { data: notificationsData } = useCollection<NotificationType>(notificationsQuery);
+  const notifications = notificationsData || [];
+  
+  const getNotificationIcon = (type: NotificationType['type']): LucideIcon => {
+    switch (type) {
+        case 'investment_accepted':
+            return CheckCircle;
+        case 'project_update':
+            return Info;
+        case 'welcome':
+            return PartyPopper;
+        default:
+            return Bell;
+    }
+  };
+
 
   useEffect(() => {
     if (!api) {
@@ -101,9 +110,9 @@ export default function HomePage() {
       const categoryMatch = activeCategory === 'الكل' || project.category === activeCategory;
       const searchMatch = searchQuery === '' ||
         project.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        project.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (project.briefDescription || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
         project.inventor.toLowerCase().includes(searchQuery.toLowerCase());
-      const costMatch = project.cost >= costRange[0] && project.cost <= costRange[1];
+      const costMatch = project.requiredCost >= costRange[0] && project.requiredCost <= costRange[1];
       return categoryMatch && searchMatch && costMatch;
     })
     .sort((a, b) => {
@@ -113,11 +122,11 @@ export default function HomePage() {
         case 'oldest':
           return new Date(a.publishDate).getTime() - new Date(b.publishDate).getTime();
         case 'highest-cost':
-          return b.cost - a.cost;
+          return b.requiredCost - a.requiredCost;
         case 'lowest-cost':
-          return a.cost - b.cost;
+          return a.requiredCost - b.requiredCost;
         case 'most-funded':
-          return (b.amountRaised || 0) - (a.amountRaised || 0);
+          return (b.currentFunding || 0) - (a.currentFunding || 0);
         default:
           return 0;
       }
@@ -133,8 +142,8 @@ export default function HomePage() {
               <AvatarFallback><User /></AvatarFallback>
             </Avatar>
             <div>
-              <h1 className="font-semibold">مرحباً، نواف</h1>
-              <p className="text-xs text-primary-foreground/80 flex items-center gap-1"><MapPin size={12}/> الرياض، السعودية</p>
+              <h1 className="font-semibold">مرحباً، {userProfile?.firstName || '...'}</h1>
+              <p className="text-xs text-primary-foreground/80 flex items-center gap-1"><MapPin size={12}/> {userProfile?.city || '...'}، السعودية</p>
             </div>
           </div>
             <Popover>
@@ -142,7 +151,7 @@ export default function HomePage() {
                   <motion.div whileTap={{ scale: 0.9 }}>
                     <Button variant="ghost" size="icon" className="relative text-primary-foreground hover:bg-primary/80">
                         <Bell />
-                        {notifications.some(n => n.isNew) && <span className="absolute top-2 right-2.5 h-2 w-2 rounded-full bg-red-500 border-2 border-primary"></span>}
+                        {notifications.some(n => !n.isRead) && <span className="absolute top-2 right-2.5 h-2 w-2 rounded-full bg-red-500 border-2 border-primary"></span>}
                     </Button>
                   </motion.div>
                 </PopoverTrigger>
@@ -152,18 +161,22 @@ export default function HomePage() {
                     </div>
                     <Separator />
                     <div className="p-2 space-y-1 max-h-96 overflow-y-auto">
-                        {notifications.map((notification, index) => (
-                            <Card key={index} className={`flex items-start gap-3 p-3 rounded-2xl bg-secondary/50 border ${notification.isNew ? 'border-primary/30' : 'border-transparent'}`}>
+                        {notifications.map((notification) => {
+                            const NotificationIcon = getNotificationIcon(notification.type);
+                            return (
+                            <Card key={notification.id} className={`flex items-start gap-3 p-3 rounded-2xl bg-secondary/50 border ${!notification.isRead ? 'border-primary/30' : 'border-transparent'}`}>
                                 <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-background`}>
-                                    <notification.icon className="h-4 w-4 text-primary" />
+                                    <NotificationIcon className="h-4 w-4 text-primary" />
                                 </div>
                                 <div className="flex-1">
                                     <p className="font-bold text-foreground text-sm">{notification.title}</p>
                                     <p className="text-xs text-muted-foreground">{notification.description}</p>
-                                    <p className="text-[10px] text-muted-foreground/70 mt-1">{notification.time}</p>
+                                    <p className="text-[10px] text-muted-foreground/70 mt-1">
+                                      {notification.createdAt ? formatDistanceToNow(new Date(notification.createdAt), { addSuffix: true, locale: arSA }) : ''}
+                                    </p>
                                 </div>
                             </Card>
-                        ))}
+                        )})}
                     </div>
                     <Separator />
                     <div className="p-2">
@@ -247,7 +260,7 @@ export default function HomePage() {
         </div>
       </header>
 
-      <div className="p-4 space-y-6">
+      <div className="p-4 space-y-8">
 
         <div className="flex justify-end">
             <Image
@@ -265,7 +278,7 @@ export default function HomePage() {
             <CarouselContent>
                 {promoItems.map((promo, index) => (
                 <CarouselItem key={index}>
-                    <Card className={`rounded-2xl bg-gradient-to-r ${promo.color} text-primary-foreground p-5 h-[150px] relative`}>
+                    <Card className={`rounded-2xl bg-gradient-to-l ${promo.color} text-primary-foreground p-5 h-[150px] relative`}>
                         <promo.icon className="absolute left-4 top-1/2 -translate-y-1/2 h-20 w-20 text-white/20" />
                         <div className="flex flex-col items-start text-right h-full">
                             <h2 className="font-bold text-xl">{promo.title}</h2>
@@ -292,6 +305,29 @@ export default function HomePage() {
             ))}
             </div>
         </div>
+        
+        {/* Venom Promo Card */}
+        <div className="my-8">
+          <Link href="/venom">
+            <Card className="rounded-2xl bg-zinc-900 border-primary/30 p-5 relative overflow-hidden transition-transform hover:scale-[1.02]">
+              <div className="flex justify-between items-center text-right">
+                  <div className="z-10">
+                      <h2 className="font-bold text-xl text-primary-foreground">مجتمع Venom للألعاب</h2>
+                      <p className="text-xs text-muted-foreground mt-1 max-w-[calc(100%-5rem)]">اكتشف فرص الاستثمار في عالم الرياضات الإلكترونية.</p>
+                  </div>
+                  <Image
+                      src="https://res.cloudinary.com/ddznxtb6f/image/upload/v1773446123/image-removebg-preview_61_jhnnbv.png"
+                      alt="شعار فينوم"
+                      width={80}
+                      height={80}
+                      className="object-contain z-10 -ml-4"
+                  />
+              </div>
+               <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-primary/10 rounded-full blur-2xl"></div>
+            </Card>
+          </Link>
+        </div>
+
 
         {/* Category Filters */}
         <div className="flex gap-2 overflow-x-auto pb-2 -mx-4 px-4" style={{ WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none' }}>

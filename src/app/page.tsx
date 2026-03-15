@@ -3,11 +3,34 @@
 import { useProjects } from '@/context/ProjectsContext';
 import Image from "next/image";
 import Link from "next/link";
+import { useUser } from '@/firebase';
+import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
+import { Loader } from '@/components/loader';
+
 
 export default function WelcomePage() {
   const { projects } = useProjects();
+  const { user, isUserLoading } = useUser();
+  const router = useRouter();
+
   // Get a variety of images for the background collage
   const collageImages = projects.slice(0, 9);
+  
+  useEffect(() => {
+    if (!isUserLoading && user) {
+      router.push('/home');
+    }
+  }, [user, isUserLoading, router]);
+
+  if (isUserLoading || user) {
+    return (
+      <div className="flex flex-col min-h-screen bg-background items-center justify-center gap-4">
+        <Loader />
+      </div>
+    );
+  }
+
 
   return (
     <div className="relative flex flex-col items-center justify-end h-screen w-full bg-background overflow-hidden">

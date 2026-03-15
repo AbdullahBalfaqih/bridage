@@ -27,10 +27,15 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Loader } from "@/components/loader";
 import AppLayout from "@/components/app-layout";
 import Image from "next/image";
+import { useAuth, useUser, useDoc, useFirestore, useMemoFirebase } from "@/firebase";
+import { doc } from "firebase/firestore";
+import type { UserProfile } from "@/lib/types";
+import { Badge } from "@/components/ui/badge";
+
 
 type ProfileMenuItemProps = {
   icon: LucideIcon;
@@ -51,14 +56,49 @@ const ProfileMenuItem = ({ icon: Icon, text, href, isLogout = false }: ProfileMe
 export default function AccountPage() {
   const router = useRouter();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
-  const virtualBalance = 35000;
+  const auth = useAuth();
+  const { user, isUserLoading } = useUser();
+  const firestore = useFirestore();
+
+  const userProfileRef = useMemoFirebase(
+    () => (user ? doc(firestore, "users", user.uid) : null),
+    [firestore, user]
+  );
+  const { data: userProfile, isLoading: isProfileLoading } = useDoc<UserProfile>(userProfileRef);
+
+  const virtualBalance = userProfile?.virtualBalance ?? 0;
+
+  useEffect(() => {
+    if (!isUserLoading && !user) {
+      router.push('/login');
+    }
+  }, [user, isUserLoading, router]);
 
   const handleLogout = () => {
     setIsLoggingOut(true);
-    setTimeout(() => {
+    auth.signOut().then(() => {
       router.push('/login');
-    }, 2000); // 2-second delay for animation
+    }).catch(() => {
+       setIsLoggingOut(false);
+    })
   };
+
+  const roleToArabic = (role: 'inventor' | 'investor' | 'visitor') => {
+    switch (role) {
+      case 'inventor': return 'مخترع';
+      case 'investor': return 'مستثمر';
+      case 'visitor': return 'زائر';
+      default: return role;
+    }
+  };
+
+  if (isUserLoading || isProfileLoading) {
+     return (
+      <div className="flex flex-col min-h-screen bg-background items-center justify-center gap-4">
+        <Loader />
+      </div>
+    );
+  }
 
   if (isLoggingOut) {
     return (
@@ -84,14 +124,30 @@ export default function AccountPage() {
 
         <main className="flex-grow p-4 space-y-6">
           {/* User Info Card */}
-          <Card className="p-6 shadow-sm rounded-2xl flex flex-col items-center text-center relative">
+          <Card className="shadow-sm rounded-2xl relative overflow-hidden">
+            <Image
+                src="https://res.cloudinary.com/ddznxtb6f/image/upload/v1772502692/Screenshot_2026-03-03_044326_go0eth.png"
+                alt="Profile background"
+                fill
+                sizes="100vw"
+                className="object-cover z-0"
+                data-ai-hint="abstract sky"
+              />
+            <div className="absolute inset-0 bg-black/40" />
+            <div className="relative z-10 p-6 flex flex-col items-center text-center text-primary-foreground">
               <div className="relative">
                   <div className="flex h-24 w-24 items-center justify-center rounded-full bg-secondary border-4 border-background">
                       <User className="h-12 w-12 text-primary" />
                   </div>
               </div>
-              <h2 className="text-2xl font-bold font-headline mt-4">نواف</h2>
-              <p className="text-muted-foreground">investor@example.com</p>
+              <h2 className="text-2xl font-bold font-headline mt-4">{userProfile?.username || user?.displayName || 'مستخدم جديد'}</h2>
+              <p className="text-primary-foreground/80">{user?.email}</p>
+              {userProfile?.role && (
+                <Badge variant="secondary" className="mt-2 bg-black/30 text-white border-primary/20">
+                  {roleToArabic(userProfile.role)}
+                </Badge>
+              )}
+            </div>
           </Card>
 
           {/* Wallet Card */}

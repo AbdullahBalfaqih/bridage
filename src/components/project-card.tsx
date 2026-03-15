@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useRouter } from 'next/navigation';
@@ -6,7 +7,7 @@ import type { Project } from '@/lib/types';
 import { Card } from './ui/card';
 import { LikeButton } from './like-button';
 
-export default function ProjectCard({ project, isFavorite = false }: { project: Project, isFavorite?: boolean }) {
+export default function ProjectCard({ project }: { project: Project }) {
   const router = useRouter();
 
   const handleCardClick = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -33,13 +34,13 @@ export default function ProjectCard({ project, isFavorite = false }: { project: 
       />
       <div className="flex-grow space-y-2 overflow-hidden">
         <h3 className="font-bold truncate">{project.name}</h3>
-        <p className="text-xs text-muted-foreground truncate h-8">{project.description}</p>
+        <p className="text-xs text-muted-foreground truncate h-8">{project.briefDescription}</p>
         <div className="flex items-center justify-between">
           <div className="font-bold text-primary flex items-center text-2xl">
-              <span>{new Intl.NumberFormat('ar-SA').format(project.cost)}</span>
+              <span>{new Intl.NumberFormat('ar-SA').format(project.requiredCost)}</span>
               <Image src="https://res.cloudinary.com/ddznxtb6f/image/upload/v1772742156/image-removebg-preview_53_qkvpjg.png" alt="SAR" width={28} height={28} className="object-contain" />
           </div>
-          <LikeButton defaultChecked={isFavorite} />
+          <LikeButton projectId={project.id} />
         </div>
       </div>
     </Card>

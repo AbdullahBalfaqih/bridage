@@ -12,13 +12,13 @@ type InvestmentTrackerProps = {
     projects: Project[];
 };
 
-const ClientSideDate = ({ date }: { date: Date }) => {
+const ClientSideDate = ({ dateString }: { dateString: string }) => {
     const [formattedDate, setFormattedDate] = useState('');
 
     useEffect(() => {
         // This effect runs only on the client, after the component has mounted.
-        setFormattedDate(new Date(date).toLocaleDateString('ar-SA'));
-    }, [date]);
+        setFormattedDate(new Date(dateString).toLocaleDateString('ar-SA'));
+    }, [dateString]);
 
     // Return a placeholder during server-side rendering and initial client-side render.
     // The actual date will be rendered on the client after hydration.
@@ -72,11 +72,11 @@ export default function InvestmentTracker({ investments, projects }: InvestmentT
                                 <div className="text-xs text-muted-foreground text-left space-y-2">
                                      <div className="flex items-center gap-1.5 justify-end">
                                         <Calendar size={14} />
-                                        <ClientSideDate date={investment.date} />
+                                        <ClientSideDate dateString={investment.investmentDate} />
                                     </div>
                                     <div className="flex items-center gap-1.5 justify-end text-primary font-medium">
                                         <TrendingUp size={14} />
-                                        <span>عائد {project.expectedProfit}%</span>
+                                        <span>عائد {project.expectedProfits}%</span>
                                     </div>
                                 </div>
                             </div>

@@ -2,7 +2,8 @@ import type { Metadata } from 'next';
 import { Toaster } from "@/components/ui/toaster"
 import './globals.css';
 import { PageTransition } from '@/components/page-transition';
-import ProjectsClientProvider from '@/providers/ProjectsClientProvider';
+import { FirebaseClientProvider } from '@/firebase/client-provider';
+import { ProjectsProvider } from '@/context/ProjectsContext';
 
 export const metadata: Metadata = {
   title: 'جسر الاستثمار',
@@ -22,12 +23,14 @@ export default function RootLayout({
         <link href="https://fonts.googleapis.com/css2?family=Almarai:wght@300;400;700;800&family=Cairo:wght@400;700;900&display=swap" rel="stylesheet" />
       </head>
       <body className="font-body antialiased">
-        <ProjectsClientProvider>
-          <PageTransition>
-            {children}
-          </PageTransition>
-          <Toaster />
-        </ProjectsClientProvider>
+        <FirebaseClientProvider>
+          <ProjectsProvider>
+            <PageTransition>
+              {children}
+            </PageTransition>
+            <Toaster />
+          </ProjectsProvider>
+        </FirebaseClientProvider>
       </body>
     </html>
   );

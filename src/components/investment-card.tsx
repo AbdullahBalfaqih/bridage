@@ -1,3 +1,4 @@
+
 'use client';
 
 import Image from 'next/image';
@@ -7,6 +8,7 @@ import { Button } from './ui/button';
 import { Progress } from './ui/progress';
 import { Users, Target } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { LikeButton } from './like-button';
 
 type InvestmentCardProps = {
   project: Project;
@@ -15,7 +17,7 @@ type InvestmentCardProps = {
 
 export default function InvestmentCard({ project, onInvestClick }: InvestmentCardProps) {
   const router = useRouter();
-  const fundingProgress = project.amountRaised && project.cost ? (project.amountRaised / project.cost) * 100 : 0;
+  const fundingProgress = project.currentFunding && project.requiredCost ? (project.currentFunding / project.requiredCost) * 100 : 0;
 
   const handleCardClick = (e: React.MouseEvent<HTMLDivElement>) => {
     // Don't navigate if invest button is clicked
@@ -41,18 +43,21 @@ export default function InvestmentCard({ project, onInvestClick }: InvestmentCar
                 className="rounded-xl object-cover aspect-square bg-black shrink-0"
                 data-ai-hint={project.imageHint}
             />
-            <div className="flex-grow space-y-1">
-                <h3 className="font-bold text-lg">{project.name}</h3>
+            <div className="flex-grow space-y-1 overflow-hidden">
+                <div className="flex justify-between items-start gap-2">
+                    <h3 className="font-bold text-lg truncate">{project.name}</h3>
+                    <LikeButton projectId={project.id} />
+                </div>
                 <p className="text-xs text-muted-foreground">{project.inventor}</p>
-                <p className="text-sm text-muted-foreground line-clamp-2">{project.description}</p>
+                <p className="text-sm text-muted-foreground line-clamp-2">{project.briefDescription}</p>
             </div>
         </div>
 
         <div>
             <div className="flex justify-between items-center mb-2">
                 <span className="text-xs font-bold text-primary">
-                    {new Intl.NumberFormat('ar-SA', { style: 'currency', currency: 'SAR', minimumFractionDigits: 0 }).format(project.amountRaised || 0)}
-                    <span className="text-muted-foreground text-xs"> / {new Intl.NumberFormat('ar-SA').format(project.cost)}</span>
+                    {new Intl.NumberFormat('ar-SA', { style: 'currency', currency: 'SAR', minimumFractionDigits: 0 }).format(project.currentFunding || 0)}
+                    <span className="text-muted-foreground text-xs"> / {new Intl.NumberFormat('ar-SA').format(project.requiredCost)}</span>
                 </span>
                 <span className="text-xs font-bold">{fundingProgress.toFixed(0)}%</span>
             </div>

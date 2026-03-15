@@ -72,7 +72,7 @@ export default function HelpAndSupportPage() {
                     لم تجد إجابة لسؤالك؟ فريق الدعم لدينا جاهز لمساعدتك.
                 </p>
                 <a href="https://wa.me/966501592406" target="_blank" rel="noopener noreferrer">
-                  
+                    <Button className="w-full rounded-xl" size="lg">
                         تواصل عبر واتساب
                         <ExternalLink className="mr-auto h-4 w-4" />
                     </Button>

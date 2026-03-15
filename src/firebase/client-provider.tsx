@@ -16,19 +16,37 @@ interface FirebaseServices {
 
 export function FirebaseClientProvider({ children }: { children: ReactNode }) {
   const [services, setServices] = useState<FirebaseServices | null>(null);
+  const [initializationFailed, setInitializationFailed] = useState(false);
+
 
   useEffect(() => {
-    // This effect only runs on the client-side, after the component has mounted.
-    // This safely avoids running Firebase initialization during server-side build.
     const initializedServices = initializeFirebase();
     if (initializedServices.firebaseApp) {
         setServices(initializedServices as FirebaseServices);
+    } else {
+        setInitializationFailed(true);
     }
   }, []);
+  
+  if (initializationFailed) {
+      return (
+        <div className="flex h-screen w-full items-center justify-center bg-background p-4 text-center">
+            <div className="rounded-xl border bg-card p-6 text-card-foreground max-w-md">
+                <h1 className="text-xl font-bold text-destructive">خطأ في الإعداد</h1>
+                <p className="mt-2">فشل الاتصال بخدمات Firebase.</p>
+                <p className="mt-1 text-sm text-muted-foreground">
+                    السبب الأكثر شيوعًا هو عدم تكوين متغيرات البيئة (environment variables) الخاصة بـ Firebase بشكل صحيح في خدمة الاستضافة (مثل Vercel أو Netlify).
+                </p>
+                 <p className="mt-4 text-xs text-muted-foreground">
+                    (Error: Firebase initialization failed. Check hosting environment variables for `NEXT_PUBLIC_FIREBASE_*`)
+                </p>
+            </div>
+        </div>
+      );
+  }
+
 
   if (!services) {
-    // While waiting for client-side mount and Firebase initialization,
-    // show a loader to prevent hydration mismatch and indicate loading.
     return (
         <div className="flex h-screen w-full items-center justify-center bg-background">
             <Loader />
@@ -36,7 +54,6 @@ export function FirebaseClientProvider({ children }: { children: ReactNode }) {
     );
   }
 
-  // Once initialized on the client, provide the services to the rest of the app.
   return (
     <FirebaseProvider
       firebaseApp={services.firebaseApp}

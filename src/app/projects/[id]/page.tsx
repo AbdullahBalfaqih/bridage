@@ -21,6 +21,7 @@ import { addDocumentNonBlocking, updateDocumentNonBlocking } from '@/firebase/no
 import { Loader } from "@/components/loader";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
 
 type StatCardProps = {
   icon: LucideIcon;
@@ -184,12 +185,29 @@ export default function ProjectDetailsPage() {
             <Accordion type="single" collapsible defaultValue="item-1">
                 <AccordionItem value="item-1" className="border-b-0">
                     <AccordionTrigger className="p-6 text-lg font-bold">
-                        عن المشروع
+                        تفاصيل المشروع
                     </AccordionTrigger>
-                    <AccordionContent className="px-6 pb-6">
-                        <p className="text-muted-foreground leading-relaxed">
-                            {project.briefDescription}
-                        </p>
+                    <AccordionContent className="px-6 pb-6 space-y-6">
+                        <div>
+                            <h4 className="font-bold text-base text-primary mb-2">وصف المشروع</h4>
+                            <p className="text-muted-foreground leading-relaxed">
+                                {project.briefDescription}
+                            </p>
+                        </div>
+                        <Separator />
+                        <div>
+                            <h4 className="font-bold text-base text-primary mb-2">المشكلة التي يحلها</h4>
+                            <p className="text-muted-foreground leading-relaxed">
+                                {project.problemDescription}
+                            </p>
+                        </div>
+                        <Separator />
+                        <div>
+                            <h4 className="font-bold text-base text-primary mb-2">الحل المقترح</h4>
+                            <p className="text-muted-foreground leading-relaxed">
+                                {project.proposedSolution}
+                            </p>
+                        </div>
                     </AccordionContent>
                 </AccordionItem>
             </Accordion>

@@ -71,9 +71,8 @@ export default function HelpAndSupportPage() {
                 <p className="text-muted-foreground">
                     لم تجد إجابة لسؤالك؟ فريق الدعم لدينا جاهز لمساعدتك.
                 </p>
-                <a href="https://wa.me/966000000000" target="_blank" rel="noopener noreferrer">
-                    <Button className="w-full rounded-xl" size="lg">
-                        <Bot className="ml-2 h-5 w-5" />
+                <a href="https://wa.me/966501592406" target="_blank" rel="noopener noreferrer">
+                  
                         تواصل عبر واتساب
                         <ExternalLink className="mr-auto h-4 w-4" />
                     </Button>

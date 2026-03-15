@@ -11,7 +11,7 @@ const initialProjectsData: Project[] = [
         name: 'نظارة طبية ذكية',
         inventor: 'سالم الغامدي',
         submitterId: 'user1',
-        briefDescription: 'يمثل هذا المشروع ثورة في عالم التشخيص المبكر، حيث يقدم نظارة طبية أنيقة مزودة بتقنية استشعار متقدمة. تقوم هذه المستشعرات بتحليل دقيق ومستمر للبيئة البكتيرية في الفم، وترسل البيانات لاسلكيًا إلى تطبيق متخصص على الهاتف. يستخدم التطبيق خوارزميات الذكاء الاصطناعي لتحديد الأنماط التي قد تشير إلى وجود استعداد وراثي لأمراض معينة، مما يفتح الباب للوقاية والعلاج المبكر قبل ظهور الأعراض بشكل كامل.',
+        briefDescription: 'نظارة طبية ذكية للكشف المبكر عن مؤشرات الأمراض الوراثية عبر تحليل البكتيريا في الفم باستخدام مستشعرات دقيقة متصلة بتطبيق.',
         problemDescription: 'يمثل هذا المشروع ثورة في عالم التشخيص المبكر، حيث يقدم نظارة طبية أنيقة مزودة بتقنية استشعار متقدمة. تقوم هذه المستشعرات بتحليل دقيق ومستمر للبيئة البكتيرية في الفم، وترسل البيانات لاسلكيًا إلى تطبيق متخصص على الهاتف. يستخدم التطبيق خوارزميات الذكاء الاصطناعي لتحديد الأنماط التي قد تشير إلى وجود استعداد وراثي لأمراض معينة، مما يفتح الباب للوقاية والعلاج المبكر قبل ظهور الأعراض بشكل كامل.',
         proposedSolution: 'تستخدم المستشعرات لتحليل العلامات الحيوية في اللعاب وإرسالها للتطبيق.',
         requiredCost: 20000,
@@ -32,7 +32,7 @@ const initialProjectsData: Project[] = [
         name: 'سوار صحي ذكي',
         inventor: 'فاطمة الشهري',
         submitterId: 'user2',
-        briefDescription: 'وداعًا للوخز اليومي المؤلم. هذا السوار الصحي المبتكر مصمم خصيصًا لمرضى السكري، حيث يستخدم تقنية استشعار بصرية غير جراحية لقياس التغيرات الطفيفة في خصائص الجلد المرتبطة مباشرةً بمستويات الجلوكوز في الدم. يتصل السوار بتطبيق على الهاتف الذكي يوفر قراءات لحظية، سجلات تاريخية، وتنبيهات ذكية عند ارتفاع أو انخفاض مستوى السكر، مما يمنح المستخدم راحة البال والقدرة على إدارة حالته الصحية بفعالية وسهولة.',
+        briefDescription: 'سوار صحي ذكي لمرضى السكري يقيس التغيرات الجلدية الدقيقة المرتبطة بمستوى السكر دون وخز، ويرتبط بتطبيق تنبيهات فورية.',
         problemDescription: 'وداعًا للوخز اليومي المؤلم. هذا السوار الصحي المبتكر مصمم خصيصًا لمرضى السكري، حيث يستخدم تقنية استشعار بصرية غير جراحية لقياس التغيرات الطفيفة في خصائص الجلد المرتبطة مباشرةً بمستويات الجلوكوز في الدم. يتصل السوار بتطبيق على الهاتف الذكي يوفر قراءات لحظية، سجلات تاريخية، وتنبيهات ذكية عند ارتفاع أو انخفاض مستوى السكر، مما يمنح المستخدم راحة البال والقدرة على إدارة حالته الصحية بفعالية وسهولة.',
         proposedSolution: 'يقيس السوار التغيرات الجلدية ويرسل البيانات للتطبيق لتنبيه المستخدم.',
         requiredCost: 30000,
@@ -53,7 +53,7 @@ const initialProjectsData: Project[] = [
         name: 'جهاز زراعي صغير',
         inventor: 'خالد العمري',
         submitterId: 'user3',
-        briefDescription: 'استجابةً لتحديات ندرة المياه والاستدامة، يقدم هذا المشروع جهازًا زراعيًا صغيرًا ومستقلاً يعمل بالكامل بالطاقة الشمسية. يتم وضع الجهاز في التربة ليقوم بقياس مستويات الرطوبة والعناصر الغذائية بشكل مستمر. بناءً على هذه البيانات، يتخذ الجهاز قرارًا ذكيًا بشأن الكمية والتوقيت المثاليين للري، ويقوم بتشغيل نظام الري تلقائيًا. هذا الحل مثالي للمزارع الصغيرة والحدائق المنزلية، حيث يضمن الاستخدام الأمثل للمياه ويزيد من إنتاجية المحاصيل.',
+        briefDescription: 'جهاز زراعي صغير يعمل بالطاقة الشمسية لقياس رطوبة التربة وتحديد الري المثالي تلقائيًا للمزارع الصغيرة.',
         problemDescription: 'استجابةً لتحديات ندرة المياه والاستدامة، يقدم هذا المشروع جهازًا زراعيًا صغيرًا ومستقلاً يعمل بالكامل بالطاقة الشمسية. يتم وضع الجهاز في التربة ليقوم بقياس مستويات الرطوبة والعناصر الغذائية بشكل مستمر. بناءً على هذه البيانات، يتخذ الجهاز قرارًا ذكيًا بشأن الكمية والتوقيت المثاليين للري، ويقوم بتشغيل نظام الري تلقائيًا. هذا الحل مثالي للمزارع الصغيرة والحدائق المنزلية، حيث يضمن الاستخدام الأمثل للمياه ويزيد من إنتاجية المحاصيل.',
         proposedSolution: 'يعتمد الجهاز على حساسات لتحديد حاجة التربة للماء والري بشكل تلقائي.',
         requiredCost: 25000,
@@ -74,7 +74,7 @@ const initialProjectsData: Project[] = [
         name: 'تطبيق طبي بالذكاء الاصطناعي',
         inventor: 'فريق Venom',
         submitterId: 'venom_team',
-        briefDescription: 'يهدف هذا التطبيق إلى تمكين المرأة من فهم صحتها بشكل أفضل. من خلال واجهة سهلة الاستخدام، يمكن للمرأة إدخال الأعراض الصحية التي تواجهها. يقوم نظام ذكاء اصطناعي متطور بتحليل هذه الأعراض، ومقارنتها بقاعدة بيانات طبية واسعة، ومن ثم تقديم توجيهات أولية حول التخصص الطبي الأنسب لحالتها. لا يقدم التطبيق تشخيصًا نهائيًا، بل يعمل كأداة فرز ذكية ومساعد شخصي يوجه المستخدمة إلى الطبيب المختص المناسب، مما يوفر الوقت ويقلل من القلق.',
+        briefDescription: 'تطبيق طبي يعتمد على الذكاء الاصطناعي لتحليل أعراض النساء المبكرة وربطها بأقرب تخصص طبي مناسب.',
         problemDescription: 'يهدف هذا التطبيق إلى تمكين المرأة من فهم صحتها بشكل أفضل. من خلال واجهة سهلة الاستخدام، يمكن للمرأة إدخال الأعراض الصحية التي تواجهها. يقوم نظام ذكاء اصطناعي متطور بتحليل هذه الأعراض، ومقارنتها بقاعدة بيانات طبية واسعة، ومن ثم تقديم توجيهات أولية حول التخصص الطبي الأنسب لحالتها. لا يقدم التطبيق تشخيصًا نهائيًا، بل يعمل كأداة فرز ذكية ومساعد شخصي يوجه المستخدمة إلى الطبيب المختص المناسب، مما يوفر الوقت ويقلل من القلق.',
         proposedSolution: 'يستخدم التطبيق الذكاء الاصطناعي لتحليل الأعراض وتقديم توصيات طبية.',
         requiredCost: 40000,
@@ -95,7 +95,7 @@ const initialProjectsData: Project[] = [
         name: 'كبسولات عضوية للتربة',
         inventor: 'نورة المطيري',
         submitterId: 'user4',
-        briefDescription: 'يقدم هذا المشروع حلاً بيئيًا ومستدامًا للزراعة الحديثة. هذه الكبسولات العضوية تحتوي على سلالات منتقاة بعناية من البكتيريا النافعة المحلية، والتي تعمل على تثبيت النيتروجين في التربة وتحليل المواد العضوية، مما يزيد من خصوبتها بشكل طبيعي. استخدام هذه الكبسولات يقلل بشكل كبير من الحاجة إلى الأسمدة الكيميائية الضارة، ويحسن من بنية التربة وقدرتها على الاحتفاظ بالماء، مما يؤدي إلى محاصيل صحية ونظام بيئي أكثر توازنًا.',
+        briefDescription: 'كبسولات عضوية لتحسين خصوبة التربة تعتمد على بكتيريا نافعة محلية، تقلل استخدام الأسمدة الكيميائية بنسبة 40%.',
         problemDescription: 'يقدم هذا المشروع حلاً بيئيًا ومستدامًا للزراعة الحديثة. هذه الكبسولات العضوية تحتوي على سلالات منتقاة بعناية من البكتيريا النافعة المحلية، والتي تعمل على تثبيت النيتروجين في التربة وتحليل المواد العضوية، مما يزيد من خصوبتها بشكل طبيعي. استخدام هذه الكبسولات يقلل بشكل كبير من الحاجة إلى الأسمدة الكيميائية الضارة، ويحسن من بنية التربة وقدرتها على الاحتفاظ بالماء، مما يؤدي إلى محاصيل صحية ونظام بيئي أكثر توازنًا.',
         proposedSolution: 'تعتمد الكبسولات على بكتيريا نافعة لتحسين جودة التربة بشكل طبيعي.',
         requiredCost: 18000,
@@ -116,7 +116,7 @@ const initialProjectsData: Project[] = [
         name: 'جهاز منزلي ذكي لتعقيم الخضار والفواكه',
         inventor: 'عبدالعزيز الراشد',
         submitterId: 'user5',
-        briefDescription: 'في عالم يزداد فيه الوعي بأهمية سلامة الغذاء، يأتي هذا الجهاز المنزلي الذكي ليوفر راحة البال لكل عائلة. يستخدم الجهاز تقنية الأوزون الطبيعي (O3)، وهو عامل مؤكسد قوي وآمن، لتعقيم الخضار والفواكه والقضاء على 99.9% من البكتيريا والمبيدات الحشرية والفيروسات دون ترك أي بقايا كيميائية. يتميز الجهاز بتصميم أنيق وسهولة في الاستخدام، مما يجعله إضافة أساسية لكل مطبخ عصري يهتم بالصحة.',
+        briefDescription: 'جهاز منزلي ذكي لتعقيم الخضار والفواكه بالأوزون الطبيعي دون مواد كيميائية، مخصص للعائلات.',
         problemDescription: 'في عالم يزداد فيه الوعي بأهمية سلامة الغذاء، يأتي هذا الجهاز المنزلي الذكي ليوفر راحة البال لكل عائلة. يستخدم الجهاز تقنية الأوزون الطبيعي (O3)، وهو عامل مؤكسد قوي وآمن، لتعقيم الخضار والفواكه والقضاء على 99.9% من البكتيريا والمبيدات الحشرية والفيروسات دون ترك أي بقايا كيميائية. يتميز الجهاز بتصميم أنيق وسهولة في الاستخدام، مما يجعله إضافة أساسية لكل مطبخ عصري يهتم بالصحة.',
         proposedSolution: 'يستخدم الجهاز الأوزون لتعقيم الخضار والفواكه بشكل آمن وفعال.',
         requiredCost: 22000,
@@ -137,7 +137,7 @@ const initialProjectsData: Project[] = [
         name: 'منصة إلكترونية لتسويق المنتجات الزراعية',
         inventor: 'علي الأحمد',
         submitterId: 'user6',
-        briefDescription: 'تهدف هذه المنصة إلى بناء جسر مباشر بين المزارعين المحليين والمستهلكين، مما يلغي الوسطاء ويضمن حصول المزارع على سعر عادل والمستهلك على منتجات طازجة وصحية. تتيح المنصة للمزارعين عرض محاصيلهم وتحديد أسعارهم، بينما يمكن للمستهلكين تصفح المنتجات والطلب مباشرة. تتضمن المنصة نظام تتبع متكامل يسمح بمعرفة مصدر المنتج ومراحل زراعته، مما يعزز الثقة والشفافية في سلسلة التوريد الغذائي.',
+        briefDescription: 'منصة إلكترونية لتسويق المنتجات الزراعية المحلية مباشرة من المزارع إلى المستهلك مع نظام تتبع جودة.',
         problemDescription: 'تهدف هذه المنصة إلى بناء جسر مباشر بين المزارعين المحليين والمستهلكين، مما يلغي الوسطاء ويضمن حصول المزارع على سعر عادل والمستهلك على منتجات طازجة وصحية. تتيح المنصة للمزارعين عرض محاصيلهم وتحديد أسعارهم، بينما يمكن للمستهلكين تصفح المنتجات والطلب مباشرة. تتضمن المنصة نظام تتبع متكامل يسمح بمعرفة مصدر المنتج ومراحل زراعته، مما يعزز الثقة والشفافية في سلسلة التوريد الغذائي.',
         proposedSolution: 'تتيح المنصة للمزارعين عرض منتجاتهم مباشرة للمستهلكين.',
         requiredCost: 35000,
@@ -158,7 +158,7 @@ const initialProjectsData: Project[] = [
 interface ProjectsContextType {
   projects: Project[];
   projectsLoading: boolean;
-  addProject: (projectData: Omit<Project, 'id' | 'inventor'| 'submitterId' | 'currentFunding' | 'investors' | 'createdAt' | 'status' | 'publishDate'> & { briefDescription: string; }, user: UserProfile) => void;
+  addProject: (projectData: Omit<Project, 'id' | 'inventor'| 'submitterId' | 'currentFunding' | 'investors' | 'createdAt' | 'status' | 'publishDate'> & { briefDescription: string; image?: string; imageHint?: string; }, user: UserProfile) => void;
   setProjects: React.Dispatch<React.SetStateAction<Project[]>>;
 }
 
@@ -183,25 +183,25 @@ export function ProjectsProvider({ children }: { children: ReactNode }) {
 
         // Check a flag to see if seeding has been done.
         const seedingFlagRef = doc(firestore, 'internal', 'seeding');
-        const docSnap = await getDoc(seedingFlagRef);
+        
+        onSnapshot(seedingFlagRef, (snapshot) => {
+            if (!snapshot.exists() || !snapshot.data().completed) {
+                console.log("Seeding initial project data...");
+                const promises = initialProjectsData.map(projectData => {
+                    const projectRef = doc(firestore, 'public_projects', projectData.id);
+                    // Use setDoc with merge:true to create or update.
+                    return setDoc(projectRef, projectData, { merge: true });
+                });
 
-        if (!docSnap.exists() || !docSnap.data().completed) {
-            console.log("Seeding initial project data...");
-            const promises = initialProjectsData.map(projectData => {
-                const projectRef = doc(firestore, 'public_projects', projectData.id);
-                // Use setDoc with merge:true to create or update.
-                return setDoc(projectRef, projectData, { merge: true });
-            });
-
-            try {
-                await Promise.all(promises);
-                // Set the flag to prevent re-seeding.
-                await setDoc(seedingFlagRef, { completed: true });
-                console.log("Seeding completed successfully.");
-            } catch (error) {
-                console.error("Error during seeding:", error);
+                Promise.all(promises).then(async () => {
+                    // Set the flag to prevent re-seeding.
+                    await setDoc(seedingFlagRef, { completed: true });
+                    console.log("Seeding completed successfully.");
+                }).catch((error) => {
+                    console.error("Error during seeding:", error);
+                })
             }
-        }
+        });
     };
 
     seedDatabase();
@@ -215,7 +215,7 @@ export function ProjectsProvider({ children }: { children: ReactNode }) {
   }, [projectsData]);
 
 
-  const addProject = (projectData: Omit<Project, 'id' | 'inventor'| 'submitterId' | 'currentFunding' | 'investors' | 'createdAt' | 'status' | 'publishDate'> & { briefDescription: string; }, user: UserProfile) => {
+  const addProject = (projectData: Omit<Project, 'id' | 'inventor'| 'submitterId' | 'currentFunding' | 'investors' | 'createdAt' | 'status' | 'publishDate'> & { briefDescription: string; image?: string; imageHint?: string; }, user: UserProfile) => {
     if (!firestore) return;
     
     const projectsCollection = collection(firestore, 'public_projects');
@@ -234,8 +234,8 @@ export function ProjectsProvider({ children }: { children: ReactNode }) {
       expectedProfits: projectData.expectedProfits,
       duration: projectData.duration,
       category: projectData.category,
-      image: `https://picsum.photos/seed/${newProjectId}/400/200`,
-      imageHint: projectData.name,
+      image: projectData.image || `https://picsum.photos/seed/${newProjectId}/400/200`,
+      imageHint: projectData.imageHint || projectData.name,
       currentFunding: 0,
       investors: 0,
       createdAt: new Date().toISOString(),

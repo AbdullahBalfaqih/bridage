@@ -21,6 +21,7 @@ import { Label } from '@/components/ui/label';
 import { useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
 import { doc } from 'firebase/firestore';
 import type { UserProfile } from '@/lib/types';
+import Image from 'next/image';
 
 const formSchema = z.object({
   name: z.string().min(3, { message: 'يجب أن يكون اسم المشروع 3 أحرف على الأقل.' }),
@@ -32,6 +33,8 @@ const formSchema = z.object({
   category: z.string().min(2, { message: 'الرجاء إدخال تصنيف.' }),
   duration: z.string().min(2, { message: 'الرجاء إدخال مدة المشروع.' }),
   type: z.enum(['standard', 'venom'], { required_error: 'الرجاء تحديد نوع المشروع.' }),
+  image: z.string().optional(),
+  imageHint: z.string().optional(),
 });
 
 export default function AddIdeaPage() {
@@ -39,6 +42,7 @@ export default function AddIdeaPage() {
   const { addProject } = useProjects();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
   
   const { user } = useUser();
   const firestore = useFirestore();
@@ -61,8 +65,23 @@ export default function AddIdeaPage() {
       category: '',
       duration: '',
       type: 'standard',
+      image: '',
+      imageHint: '',
     },
   });
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const result = reader.result as string;
+        setImagePreview(result);
+        form.setValue('image', result, { shouldDirty: true });
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   function onSubmit(values: z.infer<typeof formSchema>) {
     if (!userProfile) {
@@ -148,6 +167,45 @@ export default function AddIdeaPage() {
                             </Label>
                           </FormItem>
                         </RadioGroup>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormItem>
+                  <FormLabel>صورة المشروع</FormLabel>
+                  <FormControl>
+                    <div>
+                      {imagePreview && (
+                        <div className="relative w-full aspect-video rounded-xl overflow-hidden mb-4 border bg-secondary">
+                          <Image
+                            src={imagePreview}
+                            alt="معاينة الصورة"
+                            fill
+                            className="object-contain"
+                          />
+                        </div>
+                      )}
+                      <Input
+                        type="file"
+                        accept="image/*"
+                        className="file:text-foreground"
+                        onChange={handleFileChange}
+                      />
+                    </div>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+
+                <FormField
+                  control={form.control}
+                  name="imageHint"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>كلمات دلالية للصورة (للذكاء الاصطناعي)</FormLabel>
+                      <FormControl>
+                        <Input placeholder="مثال: tech startup" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>

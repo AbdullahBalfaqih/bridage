@@ -185,19 +185,7 @@ export default function EditProjectPage() {
                   <FormMessage />
                 </FormItem>
 
-                <FormField
-                  control={form.control}
-                  name="imageHint"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>كلمات دلالية للصورة (للذكاء الاصطناعي)</FormLabel>
-                      <FormControl>
-                        <Input placeholder="مثال: tech startup" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+
 
                 <FormField
                   control={form.control}

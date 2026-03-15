@@ -262,7 +262,7 @@ export default function HomePage() {
 
       <div className="p-4 space-y-8">
 
-        <div className="flex justify-end">
+        <div className="flex justify-start">
             <Image
                 src="https://res.cloudinary.com/ddznxtb6f/image/upload/v1772502178/image-removebg-preview_52_nihduz.png"
                 alt="شعار جسر الاستثمار"
@@ -273,7 +273,7 @@ export default function HomePage() {
         </div>
 
         {/* Promo Carousel */}
-        <div className="relative">
+        <div className="relative my-8">
             <Carousel setApi={setApi} className="w-full" opts={{ direction: 'rtl', loop: true }}>
             <CarouselContent>
                 {promoItems.map((promo, index) => (

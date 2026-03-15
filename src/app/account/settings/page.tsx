@@ -1,7 +1,7 @@
 
 'use client';
 
-import { ArrowLeft, ChevronLeft, Mail, MapPin, Phone, User as UserIcon, Lock, ShieldCheck, Smartphone, Bell, Palette, Languages } from 'lucide-react';
+import { ArrowLeft, ChevronLeft, Mail, MapPin, Phone, User as UserIcon, Lock, ShieldCheck, Smartphone, Bell, Palette, Languages, Database } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useRouter } from 'next/navigation';
@@ -20,6 +20,11 @@ type SettingsItemProps = {
   action: 'switch' | 'button';
   href?: string;
 };
+
+// NOTE: In a real app, admin status should come from a secure source like custom claims.
+// Using a hardcoded list of UIDs is for demonstration purposes only.
+// You can get your UID from the Authentication page in the Firebase console.
+const ADMIN_UIDS = ['bxLju1r58WUjTrl9HAteyJwCnO72']; // Example UID, replace with your admin's UID
 
 const SettingsItem = ({ icon: Icon, title, description, action, href }: SettingsItemProps) => {
     const content = (
@@ -56,6 +61,9 @@ export default function SettingsPage() {
     [firestore, user]
   );
   const { data: userProfile } = useDoc<UserProfile>(userProfileRef);
+
+  const isUserAdmin = user && ADMIN_UIDS.includes(user.uid);
+
 
   return (
     <div className="flex flex-col min-h-screen bg-background">
@@ -102,6 +110,21 @@ export default function SettingsPage() {
                 <SettingsItem icon={Languages} title="اللغة" description="العربية" action="button" />
             </CardContent>
         </Card>
+
+        {isUserAdmin && (
+          <Card className="rounded-2xl shadow-sm overflow-hidden border-primary/50">
+              <CardHeader><CardTitle>إدارة النظام</CardTitle></CardHeader>
+              <CardContent className="p-0">
+                  <SettingsItem 
+                      icon={Database} 
+                      title="إدارة المشاريع" 
+                      description="حذف المشاريع المكررة أو غير المرغوب فيها" 
+                      action="button"
+                      href="/admin/manage-projects" 
+                  />
+              </CardContent>
+          </Card>
+        )}
       </main>
     </div>
   );

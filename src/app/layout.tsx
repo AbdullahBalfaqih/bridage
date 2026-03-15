@@ -7,7 +7,7 @@ import { ProjectsProvider } from '@/context/ProjectsContext';
 
 export const metadata: Metadata = {
   title: 'جسر الاستثمار',
-  description: 'منصة تربط الأفكار بالتمويل، حيث تتحول الرؤى إلى مشاريع ناجحة.',
+  description: 'منصة تربط الأفكار بالتمويل',
 };
 
 export default function RootLayout({

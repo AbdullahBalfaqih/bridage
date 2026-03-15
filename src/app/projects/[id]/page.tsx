@@ -6,7 +6,7 @@ import { useProjects } from "@/context/ProjectsContext";
 import { notFound, useParams } from "next/navigation";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Badge } from "@/components/ui/badge";
-import { CircleDollarSign, Percent, Clock, Tag, User, Users } from "lucide-react";
+import { CircleDollarSign, Percent, Clock, Tag, User, Users, Edit } from "lucide-react";
 import Image from "next/image";
 import type { LucideIcon } from "lucide-react";
 import type { ReactNode } from "react";
@@ -19,6 +19,8 @@ import { useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
 import { doc, collection, increment } from 'firebase/firestore';
 import { addDocumentNonBlocking, updateDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import { Loader } from "@/components/loader";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
 
 type StatCardProps = {
   icon: LucideIcon;
@@ -106,11 +108,19 @@ export default function ProjectDetailsPage() {
     notFound();
   }
   
+  const isOwner = user?.uid === project.submitterId;
   const fundingProgress = project.currentFunding && project.requiredCost ? (project.currentFunding / project.requiredCost) * 100 : 0;
 
   return (
     <AppLayout pageTitle={project.name} showBackButton={true}>
-      <div className="p-4 space-y-6 flex flex-col items-center">
+      <div className="relative p-4 space-y-6 flex flex-col items-center">
+        {isOwner && (
+            <Button asChild size="icon" className="absolute top-2 right-2 z-10 rounded-full shadow-lg">
+                <Link href={`/projects/${project.id}/edit`}>
+                    <Edit className="h-5 w-5" />
+                </Link>
+            </Button>
+        )}
         <div className="w-full max-w-sm bg-black rounded-xl">
             <Image
                 src={project.image}

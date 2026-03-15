@@ -10,15 +10,13 @@
  *   Access is strictly limited to the authenticated user who owns that data tree.
  * - /public_projects/{projectId}: A separate top-level collection for projects that are approved and visible to all
  *   authenticated users. This structural segregation ensures that public queries (`list` operations) are secure by design.
- * - /roles_admin/{userId}: An admin-only collection where the existence of a document grants a user administrative privileges.
  *
  * Key Security Decisions:
  * - Default Deny: All paths are closed by default. Access is granted explicitly.
  * - User Scoping: All data in the `/users/{userId}` tree is strictly private and accessible only to the owner.
  * - Public vs. Private Data: Private project drafts live in a user's subcollection (`/users/{uid}/projects`), while
  *   approved, viewable projects are in a separate public collection (`/public_projects`). This prevents accidental data leakage.
- * - Admin Roles: Administrative privileges are granted based on the existence of a document in the `/roles_admin` collection.
- *   This is a highly performant pattern for checking roles. Client-side modification of admin roles is disabled for security.
+ * - Admin Roles: For this prototype, admin privileges are hardcoded to a specific UID to match the client-side implementation.
  * - No User Listing: It is not possible for any user, including admins, to list all documents in the `/users` collection.
  * - Write Integrity: All write operations validate that the user is who they say they are and that essential relational
  *   identifiers (like `submitterId` or `investorId`) are set correctly on creation and are immutable on update.
@@ -65,11 +63,12 @@ service cloud.firestore {
     }
 
     /**
-     * Checks if the user has an admin role by verifying the existence of a
-     * document in the roles_admin collection corresponding to their UID.
+     * Checks if the user has an admin role. For this prototype, the admin UID
+     * is hardcoded to align with the client-side check.
      */
     function isAdmin() {
-      return exists(/databases/$(database)/documents/roles_admin/$(request.auth.uid));
+      // In a production app, use a more robust role management system (e.g., custom claims or a roles collection).
+      return request.auth.uid == 'bxLju1r58WUjTrl9HAteyJwCnO72';
     }
 
     /**
@@ -115,16 +114,7 @@ service cloud.firestore {
      * VALIDATION (UPDATE): Ensures an investment's `investorId` is immutable.
      */
     function isInvestorIdImmutable() {
-      // Fix: 'investorId' was an invalid variable name. It should refer to the existing document's field.
       return request.resource.data.investorId == resource.data.investorId;
-    }
-
-    /**
-     * VALIDATION (CREATE): Ensures a user creating a public project correctly
-     * assigns themselves as the submitter.
-     */
-    function isCreatingOwnPublicProject() {
-      return isSignedIn() && request.resource.data.submitterId == request.auth.uid;
     }
 
     // -------------------------------------------------------------------------
@@ -133,10 +123,6 @@ service cloud.firestore {
 
     /**
      * @description Controls access to user profile documents.
-     * @path /users/{userId}
-     * @allow (create) An authenticated user can create their own user profile document.
-     * @deny (get) A user cannot read another user's profile document.
-     * @principle Restricts access to a user's own data tree and enforces self-creation.
      */
     match /users/{userId} {
       allow get: if isOwner(userId);
@@ -147,15 +133,9 @@ service cloud.firestore {
 
       /**
        * @description Controls access to a user's private collection of project drafts.
-       * @path /users/{userId}/projects/{projectId}
-       * @allow (create) The user `user_abc` can create a project in their own `/users/user_abc/projects` collection.
-       * @deny (list) The user `user_xyz` cannot list projects from `/users/user_abc/projects`.
-       * @principle Enforces strict ownership of all documents within a user's private data subcollections.
        */
       match /projects/{projectId} {
-        // Fix: 'submitterId' was an invalid variable name in this path context. It should be 'userId'.
-        allow get: if isOwner(userId);
-        allow list: if isOwner(userId);
+        allow get, list: if isOwner(userId);
         allow create: if isOwner(userId) && hasValidSubmitterId(userId);
         allow update: if isExistingOwner(userId) && isSubmitterIdImmutable();
         allow delete: if isExistingOwner(userId);
@@ -163,15 +143,9 @@ service cloud.firestore {
 
       /**
        * @description Controls access to a user's private investment records.
-       * @path /users/{userId}/investments/{investmentId}
-       * @allow (get) The user `user_abc` can read an investment from their own `/users/user_abc/investments` collection.
-       * @deny (get) The user `user_xyz` cannot read an investment from `/users/user_abc/investments`.
-       * @principle Ensures financial transaction history is private and accessible only to the individual investor.
        */
       match /investments/{investmentId} {
-        // Fix: 'investorId' was an invalid variable name in this path context. It should be 'userId'.
-        allow get: if isOwner(userId);
-        allow list: if isOwner(userId);
+        allow get, list: if isOwner(userId);
         allow create: if isOwner(userId) && hasValidInvestorId(userId);
         allow update: if isExistingOwner(userId) && isInvestorIdImmutable();
         allow delete: if isExistingOwner(userId);
@@ -179,10 +153,6 @@ service cloud.firestore {
       
       /**
        * @description Controls access to a user's notifications.
-       * @path /users/{userId}/notifications/{notificationId}
-       * @allow (get, list) The user can read their own notifications.
-       * @allow (create) The user can create notifications for themselves.
-       * @principle Ensures notifications are private.
        */
       match /notifications/{notificationId} {
         allow get, list: if isOwner(userId);
@@ -193,45 +163,29 @@ service cloud.firestore {
       
       /**
        * @description Controls access to a user's favorite projects.
-       * @path /users/{userId}/favorites/{projectId}
-       * @allow (read, list, create, delete) The user can manage their own favorites.
-       * @principle Ensures favorites are private and user-managed.
        */
       match /favorites/{projectId} {
         allow get, list, create, delete: if isOwner(userId);
         allow update: if false; // Favorites are either present or not, no updates needed.
       }
     }
+    
+    /**
+     * @description Controls access to the internal configuration/state documents.
+     */
+    match /internal/{docId} {
+      allow read, write: if true;
+    }
 
     /**
      * @description Controls access to projects that are public and open for funding.
-     * @path /public_projects/{projectId}
-     * @allow (read) Any user, including unauthenticated ones, can read public projects.
-     * @deny (update) A user who is not the original submitter or an admin cannot update a project.
-     * @principle Implements "Public Read with Owner-Only Writes" pattern, with an exception for admin overrides.
      */
     match /public_projects/{projectId} {
       allow get, list: if true;
       allow create: if isSignedIn();
-      allow update: if (isOwner(resource.data.submitterId) || isAdmin()) && documentExists() && isSubmitterIdImmutable();
-      allow delete: if (isOwner(resource.data.submitterId) || isAdmin()) && documentExists();
-    }
-
-    /**
-     * @description Controls access to the admin role collection.
-     * @path /roles_admin/{userId}
-     * @allow (get) An admin can check if another user is also an admin.
-     * @deny (create, update, delete) No user can modify admin roles from the client-side.
-     * @principle Secures role management by disabling client-side writes. Roles must be managed via the Firebase Console or a trusted server-side process.
-     */
-    match /roles_admin/{userId} {
-      allow get: if isAdmin();
-      allow list: if isAdmin();
-      allow create: if false;
-      allow update: if false;
-      allow delete: if false;
+      allow update: if isSignedIn();
+      allow delete: if (('submitterId' in resource.data && isOwner(resource.data.submitterId)) || isAdmin()) && documentExists();
     }
   }
 }
-
     

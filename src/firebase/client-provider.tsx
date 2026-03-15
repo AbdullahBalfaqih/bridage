@@ -1,24 +1,47 @@
 'use client';
 
-import React, { useMemo, type ReactNode } from 'react';
+import React, { useState, useEffect, type ReactNode } from 'react';
 import { FirebaseProvider } from '@/firebase/provider';
 import { initializeFirebase } from '@/firebase';
+import type { FirebaseApp } from 'firebase/app';
+import type { Auth } from 'firebase/auth';
+import type { Firestore } from 'firebase/firestore';
+import { Loader } from '@/components/loader';
 
-interface FirebaseClientProviderProps {
-  children: ReactNode;
+interface FirebaseServices {
+  firebaseApp: FirebaseApp;
+  auth: Auth;
+  firestore: Firestore;
 }
 
-export function FirebaseClientProvider({ children }: FirebaseClientProviderProps) {
-  const firebaseServices = useMemo(() => {
-    // Initialize Firebase on the client side, once per component mount.
-    return initializeFirebase();
-  }, []); // Empty dependency array ensures this runs only once on mount
+export function FirebaseClientProvider({ children }: { children: ReactNode }) {
+  const [services, setServices] = useState<FirebaseServices | null>(null);
 
+  useEffect(() => {
+    // This effect only runs on the client-side, after the component has mounted.
+    // This safely avoids running Firebase initialization during server-side build.
+    const initializedServices = initializeFirebase();
+    if (initializedServices.firebaseApp) {
+        setServices(initializedServices as FirebaseServices);
+    }
+  }, []);
+
+  if (!services) {
+    // While waiting for client-side mount and Firebase initialization,
+    // show a loader to prevent hydration mismatch and indicate loading.
+    return (
+        <div className="flex h-screen w-full items-center justify-center bg-background">
+            <Loader />
+        </div>
+    );
+  }
+
+  // Once initialized on the client, provide the services to the rest of the app.
   return (
     <FirebaseProvider
-      firebaseApp={firebaseServices.firebaseApp}
-      auth={firebaseServices.auth}
-      firestore={firebaseServices.firestore}
+      firebaseApp={services.firebaseApp}
+      auth={services.auth}
+      firestore={services.firestore}
     >
       {children}
     </FirebaseProvider>

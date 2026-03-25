@@ -3,11 +3,6 @@
 @tailwind utilities;
 
 @layer base {
-  @font-face {
-    font-family: 'CustomFont';
-    src: url('/fonts/po.ttf') format('truetype');
-  }
-
   :root {
     --background: 0 0% 2%;
     --foreground: 0 0% 98%;
@@ -954,3 +949,5 @@
     }
   }
 }
+
+    

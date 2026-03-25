@@ -8,19 +8,10 @@ export default {
     './src/app/**/*.{js,ts,jsx,tsx,mdx}',
   ],
   theme: {
-    fontWeight: {
-      light: '700',
-      normal: '700',
-      medium: '700',
-      semibold: '700',
-      bold: '800',
-      extrabold: '800',
-      black: '800',
-    },
     extend: {
       fontFamily: {
-        body: ['CustomFont', 'sans-serif'],
-        headline: ['CustomFont', 'sans-serif'],
+        body: ['"IBM Plex Sans Arabic"', 'sans-serif'],
+        headline: ['"IBM Plex Sans Arabic"', 'sans-serif'],
         code: ['monospace'],
       },
       colors: {
@@ -106,3 +97,5 @@ export default {
   },
   plugins: [require('tailwindcss-animate')],
 } satisfies Config;
+
+    
